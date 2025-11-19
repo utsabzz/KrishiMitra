@@ -1,0 +1,2648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krishimitra - AI Farming Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        :root {
+            --primary: #10b981;
+            --primary-light: #34d399;
+            --primary-dark: #059669;
+            --accent: #10b981;
+            --dark: #374151;
+            --light: #ffffff;
+            --gray: #9ca3af;
+            --gray-light: #f3f4f6;
+            --border: #e5e7eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-color: #ffffff;
+            --card-bg: #ffffff;
+            --text-color: #374151;
+            --shadow: rgba(0, 0, 0, 0.05);
+        }
+
+        .dark-mode {
+            --bg-color: #1a1a2e;
+            --card-bg: #16213e;
+            --text-color: #f8f9fa;
+            --dark: #f8f9fa;
+            --light: #16213e;
+            --gray: #a0aec0;
+            --gray-light: #2d3748;
+            --border: #2d3748;
+            --shadow: rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 20px;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease;
+            position: relative;
+            padding-top: 10px;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        /* Wiki AI Assistant Button */
+        .wiki-assistant-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        .wiki-assistant {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--shadow);
+            width: 60px;
+            height: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wiki-assistant:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 20px var(--shadow);
+            background: var(--primary);
+            color: white;
+        }
+
+        .wiki-assistant i {
+            font-size: 1.8rem;
+        }
+
+        /* Animated Theme Toggle */
+        .theme-toggle-container {
+            position: absolute;
+            top: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-color);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 4px 15px var(--shadow);
+            width: 50px;
+            height: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-3px) rotate(5deg);
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .theme-icon {
+            position: absolute;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .sun {
+            opacity: 0;
+            transform: translateY(20px) rotate(90deg);
+        }
+
+        .moon {
+            opacity: 1;
+            transform: translateY(0) rotate(0);
+        }
+
+        .dark-mode .sun {
+            opacity: 1;
+            transform: translateY(0) rotate(0);
+        }
+
+        .dark-mode .moon {
+            opacity: 0;
+            transform: translateY(-20px) rotate(-90deg);
+        }
+
+        .toggle-circle {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .theme-toggle.active .toggle-circle {
+            opacity: 0.1;
+            transform: scale(1);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px var(--shadow);
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: slideUp 0.8s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px var(--shadow);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary-light);
+        }
+
+        .card-title i {
+            font-size: 1.3rem;
+        }
+
+        /* ESP32-CAM Webcam Section */
+        .webcam-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 15px;
+            height: 400px;
+            background: linear-gradient(45deg, var(--gray-light), var(--card-bg));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+        }
+
+        #esp32camFeed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .webcam-placeholder {
+            text-align: center;
+            color: var(--gray);
+            padding: 20px;
+        }
+
+        .webcam-placeholder i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+            color: var(--primary);
+        }
+
+        .webcam-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .webcam-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .webcam-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .webcam-btn:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .webcam-btn.stop {
+            background: var(--danger);
+        }
+
+        .webcam-btn.stop:hover {
+            background: #dc2626;
+        }
+
+        .webcam-status {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: var(--primary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: white;
+            animation: pulse 2s infinite;
+        }
+
+        .webcam-error {
+            color: var(--danger);
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .webcam-error i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* Controls Section */
+        .controls-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .keyboard-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .key-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .key {
+            width: 80px;
+            height: 80px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.1s ease;
+            box-shadow: 0 5px 15px var(--shadow);
+            border: 2px solid var(--border);
+            color: var(--text-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .key.active {
+            background: var(--primary);
+            color: white;
+            transform: scale(0.95);
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .key.wasd {
+            color: var(--primary-light);
+        }
+
+        /* Joystick Styles */
+        .joystick-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .joystick {
+            width: 200px;
+            height: 200px;
+            background: var(--card-bg);
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px var(--shadow);
+            border: 2px solid var(--border);
+            touch-action: none;
+        }
+
+        .joystick-handle {
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            box-shadow: 0 5px 15px var(--shadow);
+            position: absolute;
+            z-index: 2;
+        }
+
+        .joystick.active .joystick-handle {
+            transform: scale(0.9);
+        }
+
+        .joystick-directions {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .direction-arrow {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .arrow-up { top: 10px; left: 50%; transform: translateX(-50%); }
+        .arrow-right { top: 50%; right: 10px; transform: translateY(-50%); }
+        .arrow-down { bottom: 10px; left: 50%; transform: translateX(-50%); }
+        .arrow-left { top: 50%; left: 10px; transform: translateY(-50%); }
+
+        .direction-indicators {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .direction {
+            width: 60px;
+            height: 60px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            box-shadow: 0 2px 8px var(--shadow);
+            border: 1px solid var(--border);
+            color: var(--text-color);
+        }
+
+        .direction.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Enhanced Sensors Section */
+        .sensors-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sensor-item {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sensor-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px var(--shadow);
+        }
+
+        .sensor-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            background: var(--primary);
+        }
+
+        .sensor-icon-container {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gray-light);
+            flex-shrink: 0;
+        }
+
+        .sensor-icon {
+            font-size: 1.8rem;
+            color: var(--primary);
+        }
+
+        .sensor-info {
+            flex: 1;
+        }
+
+        .sensor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .sensor-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .sensor-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .sensor-unit {
+            font-size: 1rem;
+            color: var(--gray);
+            margin-left: 5px;
+        }
+
+        .sensor-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-indicator-small {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .sensor-progress {
+            margin-top: 10px;
+            height: 6px;
+            background: var(--gray-light);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .sensor-progress-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .temperature .sensor-value {
+            color: var(--warning);
+        }
+
+        .temperature .sensor-progress-bar {
+            background: var(--warning);
+        }
+
+        .temperature .sensor-status {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .humidity .sensor-value {
+            color: var(--primary);
+        }
+
+        .humidity .sensor-progress-bar {
+            background: var(--primary);
+        }
+
+        .humidity .sensor-status {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary);
+        }
+
+        .soil-moisture .sensor-value {
+            color: var(--success);
+        }
+
+        .soil-moisture .sensor-progress-bar {
+            background: var(--success);
+        }
+
+        .soil-moisture .sensor-status {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .wind .sensor-value {
+            color: #3b82f6;
+        }
+
+        .wind .sensor-progress-bar {
+            background: #3b82f6;
+        }
+
+        .wind .sensor-status {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .pressure .sensor-value {
+            color: #8b5cf6;
+        }
+
+        .pressure .sensor-progress-bar {
+            background: #8b5cf6;
+        }
+
+        .pressure .sensor-status {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .uv .sensor-value {
+            color: #f59e0b;
+        }
+
+        .uv .sensor-progress-bar {
+            background: #f59e0b;
+        }
+
+        .uv .sensor-status {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .location-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 12px;
+            background: var(--gray-light);
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .location-info i {
+            color: var(--primary);
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .api-status.online {
+            color: var(--success);
+        }
+
+        .api-status.offline {
+            color: var(--danger);
+        }
+
+        /* AI Assistant Screen */
+        .ai-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-color);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .ai-screen.active {
+            transform: translateX(0);
+        }
+
+        .ai-header {
+            background: var(--card-bg);
+            padding: 20px;
+            box-shadow: 0 4px 12px var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .ai-header h2 {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--primary);
+        }
+
+        .ai-label {
+            background: linear-gradient(45deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-left: 15px;
+        }
+
+        .close-ai {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--gray);
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .close-ai:hover {
+            background: var(--gray-light);
+            transform: rotate(90deg);
+        }
+
+        .ai-content-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .ai-sidebar {
+            width: 300px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .ai-option {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 15px;
+            padding: 20px;
+            color: var(--text-color);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-option:hover {
+            border-color: var(--primary);
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px var(--shadow);
+        }
+
+        .ai-option.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .ai-option i {
+            font-size: 1.4rem;
+            width: 30px;
+        }
+
+        .ai-main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: var(--bg-color);
+        }
+
+        .ai-section {
+            display: none;
+        }
+
+        .ai-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .ai-section h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .current-conditions {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .current-conditions h4 {
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .conditions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .condition-item {
+            text-align: center;
+            padding: 15px;
+            background: var(--gray-light);
+            border-radius: 10px;
+        }
+
+        .condition-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .condition-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        .ai-response {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px var(--shadow);
+            border: 1px solid var(--border);
+            line-height: 1.6;
+        }
+
+        .ai-success {
+            border-left: 4px solid var(--success);
+        }
+
+        .ai-warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .ai-points {
+            margin-top: 15px;
+        }
+
+        .ai-point {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: var(--gray-light);
+            border-radius: 8px;
+        }
+
+        .ai-point i {
+            color: var(--primary);
+            margin-top: 2px;
+        }
+
+        .ai-text-formatted {
+            line-height: 1.6;
+        }
+
+        .ai-text-formatted h4 {
+            color: var(--primary);
+            margin: 15px 0 10px 0;
+            font-size: 1.2rem;
+        }
+
+        .ai-text-formatted p {
+            margin-bottom: 10px;
+        }
+
+        .ai-text-formatted ul, .ai-text-formatted ol {
+            margin: 10px 0 10px 20px;
+        }
+
+        .ai-text-formatted li {
+            margin-bottom: 8px;
+        }
+
+        .ai-text-formatted strong {
+            color: var(--primary);
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--primary);
+            padding: 20px;
+        }
+
+        .loading-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .loading-dots div {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: bounce 1.5s infinite;
+        }
+
+        .loading-dots div:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dots div:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .crops-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .crop-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px var(--shadow);
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .crop-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px var(--shadow);
+        }
+
+        .crop-image {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(45deg, var(--primary-light), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+
+        .crop-info {
+            padding: 15px;
+        }
+
+        .crop-info h4 {
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .crop-info p {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .crop-detail-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .crop-detail-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .crop-detail-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .close-crop-detail {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--gray);
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-crop-detail:hover {
+            background: var(--gray-light);
+        }
+
+        .ai-tip {
+            background: var(--primary-light);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Chat Interface */
+        .chat-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 12px var(--shadow);
+            border: 1px solid var(--border);
+            margin-top: 20px;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            background: var(--gray-light);
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .chat-send {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chat-send:hover {
+            background: var(--primary-dark);
+        }
+
+        .you {
+            color: #0b76ff;
+            margin-bottom: 10px;
+        }
+
+        .bot {
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        /* Ripple Effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.7);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .keyboard-controls {
+                display: none;
+            }
+            
+            .joystick-container {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                gap: 20px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .webcam-container {
+                height: 300px;
+            }
+            
+            header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .ai-content-area {
+                flex-direction: column;
+            }
+            
+            .ai-sidebar {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 20px;
+            }
+            
+            .ai-option {
+                min-width: 200px;
+            }
+            
+            .sensor-item {
+                padding: 15px;
+                gap: 15px;
+            }
+            
+            .sensor-icon-container {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .sensor-icon {
+                font-size: 1.5rem;
+            }
+            
+            .sensor-value {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .card-title {
+                font-size: 1.3rem;
+            }
+            
+            .key {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            
+            .joystick {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .joystick-handle {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .direction {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            
+            .sensor-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="wiki-assistant-container">
+                <button class="wiki-assistant" id="wikiAssistant">
+                    <i class="fas fa-book"></i>
+                </button>
+            </div>
+            <h1>Krishimitra</h1>
+            <div class="theme-toggle-container">
+                <button class="theme-toggle" id="themeToggle">
+                    <div class="toggle-circle"></div>
+                    <i class="fas fa-sun theme-icon sun"></i>
+                    <i class="fas fa-moon theme-icon moon"></i>
+                </button>
+            </div>
+        </header>
+        
+        <div class="dashboard">
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-camera"></i> ESP32-CAM Feed</h2>
+                <div class="webcam-container">
+                    <img id="esp32camFeed" src="" alt="ESP32-CAM Feed">
+                    
+                    <div class="webcam-placeholder" id="webcamPlaceholder">
+                        <i class="fas fa-camera"></i>
+                        <p>ESP32-CAM Feed Loading...</p>
+                        <p class="webcam-help">Connecting to 192.168.50.251</p>
+                    </div>
+                    
+                    <div class="webcam-error" id="webcamError">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>ESP32-CAM not accessible</p>
+                        <p>Please check if the camera is connected to the network</p>
+                    </div>
+                    
+                    <div class="webcam-controls">
+                        <button class="webcam-btn" id="refreshCam">
+                            <i class="fas fa-sync-alt"></i>
+                            Refresh Feed
+                        </button>
+                    </div>
+                    
+                    <div class="webcam-status">
+                        <div class="status-indicator"></div>
+                        <span id="webcamStatusText">Connecting...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-gamepad"></i> Robot Controls</h2>
+                <div class="controls-container">
+                    <!-- Keyboard Controls (Desktop) -->
+                    <div class="keyboard-controls">
+                        <div class="key-row">
+                            <div class="key wasd" data-key="W">W</div>
+                        </div>
+                        <div class="key-row">
+                            <div class="key wasd" data-key="A">A</div>
+                            <div class="key wasd" data-key="S">S</div>
+                            <div class="key wasd" data-key="D">D</div>
+                        </div>
+                        <p style="margin-top: 15px; color: var(--gray); font-size: 0.9rem;">
+                            Use WASD keys or click buttons to control
+                        </p>
+                    </div>
+                    
+                    <!-- Joystick Controls (Mobile/Tablet) -->
+                    <div class="joystick-container">
+                        <div class="joystick" id="joystick">
+                            <div class="joystick-handle"></div>
+                            <div class="joystick-directions">
+                                <div class="direction-arrow arrow-up">↑</div>
+                                <div class="direction-arrow arrow-right">→</div>
+                                <div class="direction-arrow arrow-down">↓</div>
+                                <div class="direction-arrow arrow-left">←</div>
+                            </div>
+                        </div>
+                        <div class="direction-indicators">
+                            <div class="direction" data-dir="W">W</div>
+                            <div class="direction" data-dir="A">A</div>
+                            <div class="direction" data-dir="S">S</div>
+                            <div class="direction" data-dir="D">D</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-chart-line"></i> Environment Sensors</h2>
+                
+                <div class="location-info">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="locationText">Fetching location...</span>
+                </div>
+                
+                <div class="sensors-list">
+                    <!-- Temperature Sensor -->
+                    <div class="sensor-item temperature">
+                        <div class="sensor-icon-container">
+                            <i class="fas fa-thermometer-half sensor-icon"></i>
+                        </div>
+                        <div class="sensor-info">
+                            <div class="sensor-header">
+                                <span class="sensor-name">Temperature</span>
+                                <span class="sensor-status">
+                                    <div class="status-indicator-small"></div>
+                                    <span id="tempStatus">Optimal</span>
+                                </span>
+                            </div>
+                            <div class="sensor-value">
+                                <span id="tempValue">--</span>
+                                <span class="sensor-unit">°C</span>
+                            </div>
+                            <div class="sensor-progress">
+                                <div class="sensor-progress-bar" id="tempProgress" style="width: 50%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Humidity Sensor -->
+                    <div class="sensor-item humidity">
+                        <div class="sensor-icon-container">
+                            <i class="fas fa-tint sensor-icon"></i>
+                        </div>
+                        <div class="sensor-info">
+                            <div class="sensor-header">
+                                <span class="sensor-name">Humidity</span>
+                                <span class="sensor-status">
+                                    <div class="status-indicator-small"></div>
+                                    <span id="humidityStatus">Comfortable</span>
+                                </span>
+                            </div>
+                            <div class="sensor-value">
+                                <span id="humidityValue">--</span>
+                                <span class="sensor-unit">%</span>
+                            </div>
+                            <div class="sensor-progress">
+                                <div class="sensor-progress-bar" id="humidityProgress" style="width: 50%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Soil Moisture Sensor -->
+                    <div class="sensor-item soil-moisture">
+                        <div class="sensor-icon-container">
+                            <i class="fas fa-seedling sensor-icon"></i>
+                        </div>
+                        <div class="sensor-info">
+                            <div class="sensor-header">
+                                <span class="sensor-name">Soil Moisture</span>
+                                <span class="sensor-status">
+                                    <div class="status-indicator-small"></div>
+                                    <span id="soilStatus">Optimal</span>
+                                </span>
+                            </div>
+                            <div class="sensor-value">
+                                <span id="soilValue">--</span>
+                                <span class="sensor-unit">%</span>
+                            </div>
+                            <div class="sensor-progress">
+                                <div class="sensor-progress-bar" id="soilProgress" style="width: 60%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Wind Speed -->
+                    <div class="sensor-item wind">
+                        <div class="sensor-icon-container">
+                            <i class="fas fa-wind sensor-icon"></i>
+                        </div>
+                        <div class="sensor-info">
+                            <div class="sensor-header">
+                                <span class="sensor-name">Wind Speed</span>
+                                <span class="sensor-status">
+                                    <div class="status-indicator-small"></div>
+                                    <span id="windStatus">Calm</span>
+                                </span>
+                            </div>
+                            <div class="sensor-value">
+                                <span id="windValue">--</span>
+                                <span class="sensor-unit">km/h</span>
+                            </div>
+                            <div class="sensor-progress">
+                                <div class="sensor-progress-bar" id="windProgress" style="width: 30%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pressure -->
+                    <div class="sensor-item pressure">
+                        <div class="sensor-icon-container">
+                            <i class="fas fa-tachometer-alt sensor-icon"></i>
+                        </div>
+                        <div class="sensor-info">
+                            <div class="sensor-header">
+                                <span class="sensor-name">Pressure</span>
+                                <span class="sensor-status">
+                                    <div class="status-indicator-small"></div>
+                                    <span id="pressureStatus">Normal</span>
+                                </span>
+                            </div>
+                            <div class="sensor-value">
+                                <span id="pressureValue">--</span>
+                                <span class="sensor-unit">mb</span>
+                            </div>
+                            <div class="sensor-progress">
+                                <div class="sensor-progress-bar" id="pressureProgress" style="width: 70%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- UV Index -->
+                    <div class="sensor-item uv">
+                        <div class="sensor-icon-container">
+                            <i class="fas fa-sun sensor-icon"></i>
+                        </div>
+                        <div class="sensor-info">
+                            <div class="sensor-header">
+                                <span class="sensor-name">UV Index</span>
+                                <span class="sensor-status">
+                                    <div class="status-indicator-small"></div>
+                                    <span id="uvStatus">Moderate</span>
+                                </span>
+                            </div>
+                            <div class="sensor-value">
+                                <span id="uvValue">--</span>
+                                <span class="sensor-unit"></span>
+                            </div>
+                            <div class="sensor-progress">
+                                <div class="sensor-progress-bar" id="uvProgress" style="width: 40%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="api-status online" id="weatherApiStatus">
+                    <i class="fas fa-wifi"></i>
+                    <span>WeatherAPI Connected - Live Data</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Assistant Screen -->
+    <div class="ai-screen" id="aiScreen">
+        <div class="ai-header">
+            <h2><i class="fas fa-robot"></i> Krishimitra AI Assistant <span class="ai-label">Powered by Sherlock Dash</span></h2>
+            <button class="close-ai" id="closeAI">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="ai-content-area">
+            <div class="ai-sidebar">
+                <button class="ai-option active" data-option="practices">
+                    <i class="fas fa-tractor"></i>
+                    Best Farming Practices
+                </button>
+                <button class="ai-option" data-option="crops">
+                    <i class="fas fa-seedling"></i>
+                    Crops To Grow
+                </button>
+                <button class="ai-option" data-option="pest">
+                    <i class="fas fa-bug"></i>
+                    Pest Control
+                </button>
+                <button class="ai-option" data-option="irrigation">
+                    <i class="fas fa-tint"></i>
+                    Irrigation Tips
+                </button>
+                <button class="ai-option" data-option="chat">
+                    <i class="fas fa-comments"></i>
+                    Chat with AI
+                </button>
+            </div>
+            <div class="ai-main">
+                <div class="current-conditions">
+                    <h4>Current Farm Conditions</h4>
+                    <div class="conditions-grid">
+                        <div class="condition-item">
+                            <div class="condition-value" id="aiTemp">--°C</div>
+                            <div class="condition-label">Temperature</div>
+                        </div>
+                        <div class="condition-item">
+                            <div class="condition-value" id="aiHumidity">--%</div>
+                            <div class="condition-label">Humidity</div>
+                        </div>
+                        <div class="condition-item">
+                            <div class="condition-value" id="aiSoil">--%</div>
+                            <div class="condition-label">Soil Moisture</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ai-section active" id="practicesSection">
+                    <h3><i class="fas fa-tractor"></i> Best Farming Practices</h3>
+                    <div id="practicesContent">
+                        <div class="ai-tip">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>Krishimitra AI is analyzing your farm conditions to provide personalized recommendations...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ai-section" id="cropsSection">
+                    <h3><i class="fas fa-seedling"></i> Recommended Crops</h3>
+                    <div id="cropsContent">
+                        <div class="ai-tip">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>Get AI recommendations for the best crops to grow in your current conditions.</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ai-section" id="pestSection">
+                    <h3><i class="fas fa-bug"></i> Pest Control</h3>
+                    <div id="pestContent">
+                        <div class="ai-tip">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>AI-powered pest management recommendations for your farm.</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ai-section" id="irrigationSection">
+                    <h3><i class="fas fa-tint"></i> Irrigation Tips</h3>
+                    <div id="irrigationContent">
+                        <div class="ai-tip">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>Smart watering recommendations based on current soil moisture and weather conditions.</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ai-section" id="chatSection">
+                    <h3><i class="fas fa-comments"></i> Chat with Krishimitra AI</h3>
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="bot"><b>Krishimitra AI:</b> Hello! I'm your farming assistant. I can see your current farm conditions and help you with farming practices, crop selection, pest control, and irrigation tips. How can I assist you today?</div>
+                        </div>
+                        <div class="chat-input-container">
+                            <input type="text" class="chat-input" id="chatInput" placeholder="Ask me anything about farming...">
+                            <button class="chat-send" id="chatSend">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Crop Detail Modal -->
+    <div class="crop-detail-modal" id="cropDetailModal">
+        <div class="crop-detail-content">
+            <button class="close-crop-detail" id="closeCropDetail">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 id="cropDetailTitle">Crop Details</h3>
+            <div id="cropDetailContent">
+                <!-- Crop details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Keys
+        const SHERLOCK_API_KEY = "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";
+        const SHERLOCK_MODEL = "openrouter/sherlock-dash-alpha";
+        const WEATHERAPI_KEY = "6f5c10f8d8aa419ca73151457251911";
+        const ESP32_CAM_IP = "192.168.50.251";
+
+        // Ripple Effect Function
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const circle = document.createElement("span");
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+            circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
+            circle.classList.add("ripple");
+
+            const ripple = button.getElementsByClassName("ripple")[0];
+            if (ripple) {
+                ripple.remove();
+            }
+
+            button.appendChild(circle);
+        }
+
+        // Add ripple effect to all buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.addEventListener('click', createRipple);
+            });
+        });
+
+        // ESP32-CAM Integration
+        const esp32camFeed = document.getElementById('esp32camFeed');
+        const webcamPlaceholder = document.getElementById('webcamPlaceholder');
+        const webcamError = document.getElementById('webcamError');
+        const refreshCamBtn = document.getElementById('refreshCam');
+        const webcamStatusText = document.getElementById('webcamStatusText');
+
+        // Function to load ESP32-CAM feed
+        function loadESP32Cam() {
+            const camURL = `http://${ESP32_CAM_IP}/`;
+            
+            // Try different common ESP32-CAM endpoints
+            const endpoints = [
+                '',
+                'stream',
+                'capture',
+                'jpg',
+                'cam.jpg',
+                'cam.mjpeg'
+            ];
+            
+            let currentEndpointIndex = 0;
+            
+            function tryNextEndpoint() {
+                if (currentEndpointIndex >= endpoints.length) {
+                    // All endpoints failed
+                    webcamPlaceholder.style.display = 'none';
+                    webcamError.style.display = 'block';
+                    webcamStatusText.textContent = 'Offline';
+                    return;
+                }
+                
+                const endpoint = endpoints[currentEndpointIndex];
+                const testURL = endpoint ? `${camURL}${endpoint}` : camURL;
+                
+                webcamStatusText.textContent = `Trying ${testURL}...`;
+                
+                // Create a test image to check if the feed is accessible
+                const testImg = new Image();
+                testImg.onload = function() {
+                    // This endpoint works!
+                    esp32camFeed.src = testURL;
+                    esp32camFeed.style.display = 'block';
+                    webcamPlaceholder.style.display = 'none';
+                    webcamError.style.display = 'none';
+                    webcamStatusText.textContent = 'Live';
+                    
+                    // Set up automatic refresh every 5 seconds
+                    setInterval(() => {
+                        esp32camFeed.src = testURL + '?t=' + new Date().getTime();
+                    }, 5000);
+                };
+                
+                testImg.onerror = function() {
+                    // This endpoint failed, try the next one
+                    currentEndpointIndex++;
+                    setTimeout(tryNextEndpoint, 500);
+                };
+                
+                testImg.src = testURL + '?t=' + new Date().getTime();
+            }
+            
+            // Start trying endpoints
+            tryNextEndpoint();
+        }
+
+        // Refresh camera feed
+        refreshCamBtn.addEventListener('click', loadESP32Cam);
+
+        // Initialize ESP32-CAM on page load
+        loadESP32Cam();
+
+        // Animated Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        
+        themeToggle.addEventListener('click', () => {
+            themeToggle.classList.add('active');
+            document.body.classList.toggle('dark-mode');
+            setTimeout(() => {
+                themeToggle.classList.remove('active');
+            }, 500);
+        });
+
+        // AI Assistant Screen
+        const wikiAssistant = document.getElementById('wikiAssistant');
+        const aiScreen = document.getElementById('aiScreen');
+        const closeAI = document.getElementById('closeAI');
+        const aiOptions = document.querySelectorAll('.ai-option');
+        const aiSections = document.querySelectorAll('.ai-section');
+        
+        // Open AI Screen
+        wikiAssistant.addEventListener('click', () => {
+            aiScreen.classList.add('active');
+            updateAIConditions();
+        });
+        
+        // Close AI Screen
+        closeAI.addEventListener('click', () => {
+            aiScreen.classList.remove('active');
+        });
+        
+        // AI Option Selection
+        aiOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const optionType = option.getAttribute('data-option');
+                
+                // Remove active class from all options
+                aiOptions.forEach(opt => opt.classList.remove('active'));
+                // Add active class to clicked option
+                option.classList.add('active');
+                
+                // Hide all sections
+                aiSections.forEach(section => section.classList.remove('active'));
+                // Show selected section
+                document.getElementById(`${optionType}Section`).classList.add('active');
+                
+                // Load content for the selected option
+                handleAIOption(optionType);
+            });
+        });
+        
+        // Update AI conditions display
+        function updateAIConditions() {
+            const temp = document.getElementById('tempValue').textContent;
+            const humidity = document.getElementById('humidityValue').textContent;
+            const soil = document.getElementById('soilValue').textContent;
+            
+            document.getElementById('aiTemp').textContent = temp + '°C';
+            document.getElementById('aiHumidity').textContent = humidity + '%';
+            document.getElementById('aiSoil').textContent = soil + '%';
+        }
+        
+        // Handle AI Option Selection with Sherlock Dash
+        async function handleAIOption(optionType) {
+            // Get current sensor values
+            const temp = document.getElementById('tempValue').textContent;
+            const humidity = document.getElementById('humidityValue').textContent;
+            const soil = document.getElementById('soilValue').textContent;
+            
+            // Get content container
+            const contentContainer = document.getElementById(`${optionType}Content`);
+            
+            // Show loading state
+            if (optionType !== 'chat') {
+                contentContainer.innerHTML = `
+                    <div class="loading">
+                        <i class="fas fa-robot"></i>
+                        <span>Krishimitra AI is analyzing your farm conditions...</span>
+                        <div class="loading-dots">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            try {
+                let prompt = "";
+                
+                switch(optionType) {
+                    case 'practices':
+                        prompt = `Based on current farm conditions: Temperature ${temp}°C, Humidity ${humidity}%, Soil Moisture ${soil}%, provide the best farming practices for optimal crop growth. Format the response with proper headings, bullet points, and clear organization. Include specific recommendations for soil management, watering schedule, fertilization, and any special considerations for these conditions.`;
+                        break;
+                    case 'crops':
+                        prompt = `Based on current farm conditions: Temperature ${temp}°C, Humidity ${humidity}%, Soil Moisture ${soil}%, recommend 5-7 suitable crops to grow. For each crop, provide a brief description, key growing requirements, ideal planting season, and expected yield. Also mention any special care needed for these conditions. Format as a well-organized list with clear headings.`;
+                        break;
+                    case 'pest':
+                        prompt = `Based on current farm conditions: Temperature ${temp}°C, Humidity ${humidity}%, Soil Moisture ${soil}%, provide comprehensive pest control recommendations. Include both preventive measures and treatment options for common pests that thrive in these conditions. Mention organic and chemical options with safety precautions. Format with clear headings and organized sections.`;
+                        break;
+                    case 'irrigation':
+                        prompt = `Based on current farm conditions: Temperature ${temp}°C, Humidity ${humidity}%, Soil Moisture ${soil}%, provide optimal irrigation practices. Include specific watering frequency, amount, timing recommendations, and water conservation tips. Also suggest any irrigation system adjustments needed. Format with proper headings and organized content.`;
+                        break;
+                    case 'chat':
+                        // Don't load anything for chat section
+                        return;
+                }
+                
+                // Call Sherlock Dash API
+                const response = await callSherlockDash(prompt);
+                
+                // Format the response based on option type
+                if (optionType === 'crops') {
+                    displayCrops(response, contentContainer);
+                } else {
+                    displayFormattedText(response, contentContainer);
+                }
+                
+            } catch (error) {
+                console.error('Error calling AI:', error);
+                // Show intelligent fallback content
+                showFallbackContent(optionType, temp, humidity, soil, contentContainer);
+            }
+        }
+        
+        // Format response with proper text formatting
+        function displayFormattedText(response, container) {
+            // Basic formatting - convert markdown-like syntax to HTML
+            let formattedText = response
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+                .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
+                .replace(/^### (.*$)/gim, '<h4>$1</h4>') // Headers
+                .replace(/^## (.*$)/gim, '<h4>$1</h4>')
+                .replace(/^# (.*$)/gim, '<h4>$1</h4>')
+                .replace(/^- (.*$)/gim, '<li>$1</li>') // List items
+                .replace(/\n/g, '<br>') // Line breaks
+                .replace(/<li>.*<\/li>/g, '<ul>$&</ul>') // Wrap lists
+                .replace(/<\/ul>\s*<ul>/g, ''); // Merge adjacent lists
+            
+            // Ensure proper paragraph structure
+            formattedText = formattedText.replace(/<br><br>/g, '</p><p>');
+            formattedText = '<p>' + formattedText + '</p>';
+            
+            container.innerHTML = `
+                <div class="ai-response ai-success">
+                    <h4>Krishimitra AI Recommendations:</h4>
+                    <div class="ai-text-formatted">
+                        ${formattedText}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Display crops as cards
+        function displayCrops(response, container) {
+            // Extract crop names from response
+            const cropNames = extractCropNames(response);
+            
+            // Create crop cards
+            const cropsHTML = cropNames.map(crop => `
+                <div class="crop-card" data-crop="${crop}">
+                    <div class="crop-image">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <div class="crop-info">
+                        <h4>${crop}</h4>
+                        <p>Click for planting instructions</p>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = `
+                <div class="ai-response ai-success">
+                    <h4>Recommended Crops for Your Conditions:</h4>
+                    <div class="crops-grid">
+                        ${cropsHTML}
+                    </div>
+                </div>
+            `;
+            
+            // Add click event to crop cards
+            const cropCards = container.querySelectorAll('.crop-card');
+            cropCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const cropName = card.getAttribute('data-crop');
+                    showCropDetails(cropName);
+                });
+            });
+        }
+        
+        // Extract crop names from AI response
+        function extractCropNames(response) {
+            // Common crop names to look for
+            const commonCrops = [
+                'Tomatoes', 'Potatoes', 'Carrots', 'Lettuce', 'Spinach', 'Cabbage',
+                'Bell Peppers', 'Chili Peppers', 'Cucumbers', 'Zucchini', 'Pumpkins',
+                'Beans', 'Peas', 'Corn', 'Wheat', 'Rice', 'Barley', 'Oats',
+                'Strawberries', 'Blueberries', 'Raspberries', 'Apples', 'Oranges',
+                'Mangoes', 'Bananas', 'Grapes', 'Watermelons', 'Cantaloupes'
+            ];
+            
+            const foundCrops = [];
+            const responseLower = response.toLowerCase();
+            
+            commonCrops.forEach(crop => {
+                if (responseLower.includes(crop.toLowerCase())) {
+                    foundCrops.push(crop);
+                }
+            });
+            
+            // If no crops found, return some defaults
+            if (foundCrops.length === 0) {
+                return ['Tomatoes', 'Carrots', 'Spinach', 'Bell Peppers', 'Cucumbers'];
+            }
+            
+            return foundCrops.slice(0, 6); // Return max 6 crops
+        }
+        
+        // Show crop details modal
+        async function showCropDetails(cropName) {
+            const modal = document.getElementById('cropDetailModal');
+            const title = document.getElementById('cropDetailTitle');
+            const content = document.getElementById('cropDetailContent');
+            
+            title.textContent = `${cropName} - Planting Guide`;
+            content.innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-robot"></i>
+                    <span>Krishimitra AI is generating planting instructions...</span>
+                    <div class="loading-dots">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+            
+            try {
+                const prompt = `Provide detailed planting and growing instructions for ${cropName}. Include information about soil preparation, planting time, spacing, watering needs, fertilization, common pests, and harvesting. Format with clear headings and organized sections.`;
+                
+                const response = await callSherlockDash(prompt);
+                
+                // Format the response
+                let formattedText = response
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/^### (.*$)/gim, '<h4>$1</h4>')
+                    .replace(/^## (.*$)/gim, '<h4>$1</h4>')
+                    .replace(/^# (.*$)/gim, '<h4>$1</h4>')
+                    .replace(/^- (.*$)/gim, '<li>$1</li>')
+                    .replace(/\n/g, '<br>')
+                    .replace(/<li>.*<\/li>/g, '<ul>$&</ul>')
+                    .replace(/<\/ul>\s*<ul>/g, '');
+                
+                formattedText = '<p>' + formattedText + '</p>';
+                
+                content.innerHTML = `
+                    <div class="ai-text-formatted">
+                        ${formattedText}
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error getting crop details:', error);
+                content.innerHTML = `
+                    <div class="ai-response ai-warning">
+                        <p>Sorry, I couldn't retrieve planting instructions for ${cropName} at this time. Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Close crop detail modal
+        document.getElementById('closeCropDetail').addEventListener('click', () => {
+            document.getElementById('cropDetailModal').classList.remove('active');
+        });
+        
+        // Call Sherlock Dash Inference API
+        async function callSherlockDash(prompt) {
+            try {
+                const response = await fetch(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Authorization": "Bearer " + SHERLOCK_API_KEY,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            model: SHERLOCK_MODEL,
+                            messages: [{ role: "user", content: prompt }]
+                        })
+                    }
+                );
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+                    return data.choices[0].message.content;
+                } else {
+                    throw new Error('Invalid response format from Sherlock Dash');
+                }
+                
+            } catch (error) {
+                console.error('Sherlock Dash API call failed:', error);
+                throw error;
+            }
+        }
+        
+        // Chat functionality
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const chatSend = document.getElementById('chatSend');
+        
+        chatSend.addEventListener('click', sendChatMessage);
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') sendChatMessage();
+        });
+        
+        async function sendChatMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            
+            // Add user message
+            appendChatMessage('user', text);
+            chatInput.value = '';
+            
+            // Get current conditions for context
+            const temp = document.getElementById('tempValue').textContent;
+            const humidity = document.getElementById('humidityValue').textContent;
+            const soil = document.getElementById('soilValue').textContent;
+            
+            // Create context-aware prompt
+            const contextPrompt = `Current farm conditions: Temperature ${temp}°C, Humidity ${humidity}%, Soil Moisture ${soil}%. User question: ${text}`;
+            
+            try {
+                // Add loading message
+                appendChatMessage('bot', '...');
+                
+                // Call Sherlock Dash API
+                const response = await callSherlockDash(contextPrompt);
+                
+                // Remove loading message
+                const messages = chatMessages.querySelectorAll('.bot');
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage && lastMessage.textContent === 'Krishimitra AI: ...') {
+                    lastMessage.remove();
+                }
+                
+                // Format and add AI response
+                let formattedResponse = response
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+                
+                appendChatMessage('bot', formattedResponse);
+                
+            } catch (error) {
+                console.error('Error in chat:', error);
+                // Remove loading message
+                const messages = chatMessages.querySelectorAll('.bot');
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage && lastMessage.textContent === 'Krishimitra AI: ...') {
+                    lastMessage.remove();
+                }
+                
+                appendChatMessage('bot', 'Sorry, I encountered an error. Please try again.');
+            }
+        }
+        
+        function appendChatMessage(role, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = role;
+            messageDiv.innerHTML = `<b>${role === 'user' ? 'You' : 'Krishimitra AI'}:</b> ${text}`;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Show intelligent fallback content when AI is unavailable
+        function showFallbackContent(optionType, temp, humidity, soil, contentContainer) {
+            let content = '';
+            const tempNum = parseFloat(temp);
+            const humidityNum = parseInt(humidity);
+            const soilNum = parseInt(soil);
+            
+            switch(optionType) {
+                case 'practices':
+                    content = `
+                        <div class="ai-response ai-warning">
+                            <h4>Best Farming Practices for Your Conditions:</h4>
+                            <div class="ai-points">
+                                <div class="ai-point">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span><strong>Soil Management:</strong> ${soilNum < 30 ? 'Increase watering frequency' : soilNum > 60 ? 'Reduce irrigation to prevent waterlogging' : 'Maintain current moisture levels'}</span>
+                                </div>
+                                <div class="ai-point">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span><strong>Temperature Control:</strong> ${tempNum < 18 ? 'Consider using row covers for warmth' : tempNum > 28 ? 'Provide shade during peak hours' : 'Ideal temperature range for most crops'}</span>
+                                </div>
+                                <div class="ai-point">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span><strong>Humidity Management:</strong> ${humidityNum < 40 ? 'Increase humidity with misting' : humidityNum > 75 ? 'Improve air circulation to prevent fungal diseases' : 'Optimal humidity levels'}</span>
+                                </div>
+                                <div class="ai-point">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span><strong>General Tips:</strong> Monitor conditions daily, rotate crops seasonally, and use organic compost for soil health</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'crops':
+                    const crops = getCropRecommendations(tempNum, humidityNum, soilNum);
+                    content = `
+                        <div class="ai-response ai-warning">
+                            <h4>Recommended Crops for Your Conditions:</h4>
+                            <div class="crops-grid">
+                                ${crops}
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'pest':
+                    content = `
+                        <div class="ai-response ai-warning">
+                            <h4>Pest Control Recommendations:</h4>
+                            <div class="ai-points">
+                                <div class="ai-point">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span><strong>Common Pests:</strong> ${tempNum > 25 ? 'Watch for aphids and spider mites' : 'Monitor for slugs and snails'}</span>
+                                </div>
+                                <div class="ai-point">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span><strong>Prevention:</strong> ${humidityNum > 70 ? 'Improve ventilation to prevent fungal issues' : 'Regular inspection of plant undersides'}</span>
+                                </div>
+                                <div class="ai-point">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span><strong>Organic Solutions:</strong> Neem oil spray, companion planting with marigolds</span>
+                                </div>
+                                <div class="ai-point">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span><strong>Chemical Options:</strong> Use as last resort, follow safety guidelines</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'irrigation':
+                    content = `
+                        <div class="ai-response ai-warning">
+                            <h4>Smart Irrigation Guide:</h4>
+                            <div class="ai-points">
+                                <div class="ai-point">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span><strong>Current Status:</strong> ${soilNum < 30 ? 'Soil is dry - increase watering' : soilNum > 60 ? 'Soil is saturated - reduce watering' : 'Soil moisture is optimal'}</span>
+                                </div>
+                                <div class="ai-point">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span><strong>Watering Frequency:</strong> ${tempNum > 25 ? 'Water daily in early morning' : 'Water every 2-3 days'}</span>
+                                </div>
+                                <div class="ai-point">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span><strong>Amount:</strong> ${humidityNum < 50 ? 'Deep watering to encourage root growth' : 'Light watering to maintain moisture'}</span>
+                                </div>
+                                <div class="ai-point">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span><strong>Conservation:</strong> Use drip irrigation, mulch soil surface, collect rainwater</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            contentContainer.innerHTML = content;
+            
+            // Add click events to crop cards in fallback
+            if (optionType === 'crops') {
+                const cropCards = contentContainer.querySelectorAll('.crop-card');
+                cropCards.forEach(card => {
+                    card.addEventListener('click', () => {
+                        const cropName = card.getAttribute('data-crop');
+                        showCropDetails(cropName);
+                    });
+                });
+            }
+        }
+        
+        // Get crop recommendations based on conditions
+        function getCropRecommendations(temp, humidity, soil) {
+            let crops = [];
+            
+            if (temp >= 20 && temp <= 30) {
+                crops.push('Tomatoes', 'Bell Peppers', 'Cucumbers', 'Beans');
+            }
+            if (temp >= 15 && temp <= 25) {
+                crops.push('Lettuce', 'Spinach', 'Carrots', 'Radishes');
+            }
+            if (humidity >= 40 && humidity <= 70) {
+                crops.push('Basil', 'Mint', 'Coriander');
+            }
+            if (soil >= 30 && soil <= 60) {
+                crops.push('Potatoes', 'Onions', 'Garlic');
+            }
+            
+            // Remove duplicates and return as crop cards
+            const uniqueCrops = [...new Set(crops)];
+            return uniqueCrops.map(crop => `
+                <div class="crop-card" data-crop="${crop}">
+                    <div class="crop-image">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <div class="crop-info">
+                        <h4>${crop}</h4>
+                        <p>Click for planting instructions</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update progress bars based on sensor values
+        function updateTemperatureProgress(temp) {
+            const progress = document.getElementById('tempProgress');
+            // Map temperature to progress (10°C = 0%, 30°C = 100%)
+            const percentage = Math.max(0, Math.min(100, ((temp - 10) / 20) * 100));
+            progress.style.width = `${percentage}%`;
+        }
+
+        function updateHumidityProgress(humidity) {
+            const progress = document.getElementById('humidityProgress');
+            progress.style.width = `${humidity}%`;
+        }
+
+        function updateSoilProgress(soil) {
+            const progress = document.getElementById('soilProgress');
+            progress.style.width = `${soil}%`;
+        }
+
+        function updateWindProgress(wind) {
+            const progress = document.getElementById('windProgress');
+            // Map wind speed to progress (0 km/h = 0%, 50 km/h = 100%)
+            const percentage = Math.max(0, Math.min(100, (wind / 50) * 100));
+            progress.style.width = `${percentage}%`;
+        }
+
+        function updatePressureProgress(pressure) {
+            const progress = document.getElementById('pressureProgress');
+            // Map pressure to progress (950 mb = 0%, 1050 mb = 100%)
+            const percentage = Math.max(0, Math.min(100, ((pressure - 950) / 100) * 100));
+            progress.style.width = `${percentage}%`;
+        }
+
+        function updateUVProgress(uv) {
+            const progress = document.getElementById('uvProgress');
+            // Map UV index to progress (0 = 0%, 11+ = 100%)
+            const percentage = Math.max(0, Math.min(100, (uv / 11) * 100));
+            progress.style.width = `${percentage}%`;
+        }
+
+        // Update sensor status based on values
+        function updateSensorStatus() {
+            const temp = parseFloat(document.getElementById('tempValue').textContent);
+            const humidity = parseInt(document.getElementById('humidityValue').textContent);
+            const soil = parseInt(document.getElementById('soilValue').textContent);
+            const wind = parseInt(document.getElementById('windValue').textContent);
+            const pressure = parseInt(document.getElementById('pressureValue').textContent);
+            const uv = parseInt(document.getElementById('uvValue').textContent);
+
+            // Temperature status
+            let tempStatus = 'Optimal';
+            if (temp < 15) tempStatus = 'Too Cold';
+            else if (temp > 28) tempStatus = 'Too Hot';
+            document.getElementById('tempStatus').textContent = tempStatus;
+
+            // Humidity status
+            let humidityStatus = 'Comfortable';
+            if (humidity < 40) humidityStatus = 'Dry';
+            else if (humidity > 75) humidityStatus = 'Humid';
+            document.getElementById('humidityStatus').textContent = humidityStatus;
+
+            // Soil moisture status
+            let soilStatus = 'Optimal';
+            if (soil < 30) soilStatus = 'Needs Water';
+            else if (soil > 70) soilStatus = 'Too Wet';
+            document.getElementById('soilStatus').textContent = soilStatus;
+
+            // Wind status
+            let windStatus = 'Calm';
+            if (wind > 20) windStatus = 'Windy';
+            else if (wind > 40) windStatus = 'Very Windy';
+            document.getElementById('windStatus').textContent = windStatus;
+
+            // Pressure status
+            let pressureStatus = 'Normal';
+            if (pressure < 1000) pressureStatus = 'Low';
+            else if (pressure > 1020) pressureStatus = 'High';
+            document.getElementById('pressureStatus').textContent = pressureStatus;
+
+            // UV status
+            let uvStatus = 'Low';
+            if (uv > 2 && uv <= 5) uvStatus = 'Moderate';
+            else if (uv > 5 && uv <= 7) uvStatus = 'High';
+            else if (uv > 7 && uv <= 10) uvStatus = 'Very High';
+            else if (uv > 10) uvStatus = 'Extreme';
+            document.getElementById('uvStatus').textContent = uvStatus;
+        }
+
+        // Get user location and fetch weather data using WeatherAPI
+        async function initializeLocationAndWeather() {
+            try {
+                // Get user's location
+                const position = await getCurrentPosition();
+                const { latitude, longitude } = position.coords;
+                
+                // Get weather data from WeatherAPI
+                await getWeatherData(latitude, longitude);
+                
+            } catch (error) {
+                console.error('Error initializing location and weather:', error);
+                document.getElementById('locationText').textContent = 'Location unavailable - Using demo data';
+                document.getElementById('weatherApiStatus').className = 'api-status offline';
+                document.getElementById('weatherApiStatus').innerHTML = '<i class="fas fa-wifi-slash"></i><span>Using demo data</span>';
+                
+                // Use stable demo data
+                updateWeatherUI({
+                    location: 'Demo Farm Location',
+                    temperature: 24,
+                    humidity: 65,
+                    wind_kph: 12,
+                    pressure_mb: 1013,
+                    uv: 5
+                });
+            }
+        }
+
+        // Get current position
+        function getCurrentPosition() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocation is not supported'));
+                    return;
+                }
+                
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                });
+            });
+        }
+
+        // Get weather data from WeatherAPI
+        async function getWeatherData(lat, lon) {
+            try {
+                // Using WeatherAPI (1M free calls per month)
+                const response = await fetch(
+                    `https://api.weatherapi.com/v1/current.json?key=${WEATHERAPI_KEY}&q=${lat},${lon}&aqi=no`
+                );
+                
+                if (!response.ok) throw new Error('WeatherAPI failed');
+                
+                const data = await response.json();
+                
+                updateWeatherUI({
+                    location: `${data.location.name}, ${data.location.country}`,
+                    temperature: Math.round(data.current.temp_c),
+                    humidity: data.current.humidity,
+                    wind_kph: data.current.wind_kph,
+                    pressure_mb: data.current.pressure_mb,
+                    uv: data.current.uv
+                });
+                
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                throw error;
+            }
+        }
+
+        // Update weather UI with real data
+        function updateWeatherUI(weatherData) {
+            document.getElementById('locationText').textContent = weatherData.location;
+            
+            // Update all sensor values from WeatherAPI
+            document.getElementById('tempValue').textContent = weatherData.temperature;
+            document.getElementById('humidityValue').textContent = weatherData.humidity;
+            document.getElementById('windValue').textContent = weatherData.wind_kph;
+            document.getElementById('pressureValue').textContent = weatherData.pressure_mb;
+            document.getElementById('uvValue').textContent = weatherData.uv;
+            
+            // Set stable soil moisture value (not from weather API)
+            document.getElementById('soilValue').textContent = '65';
+            
+            // Update progress bars and status
+            updateTemperatureProgress(weatherData.temperature);
+            updateHumidityProgress(weatherData.humidity);
+            updateWindProgress(weatherData.wind_kph);
+            updatePressureProgress(weatherData.pressure_mb);
+            updateUVProgress(weatherData.uv);
+            updateSoilProgress(65);
+            updateSensorStatus();
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize location and weather
+            initializeLocationAndWeather();
+            
+            // Auto-load practices when AI screen opens
+            wikiAssistant.addEventListener('click', () => {
+                setTimeout(() => {
+                    handleAIOption('practices');
+                }, 500);
+            });
+        });
+
+        // Controls System
+        const keys = document.querySelectorAll('.key');
+        const directions = document.querySelectorAll('.direction');
+        const joystick = document.getElementById('joystick');
+        const joystickHandle = document.querySelector('.joystick-handle');
+
+        // Highlight keys when pressed
+        function highlightKey(key) {
+            const keyElement = document.querySelector(`.key[data-key="${key}"]`);
+            const dirElement = document.querySelector(`.direction[data-dir="${key}"]`);
+            
+            if (keyElement) {
+                keyElement.classList.add('active');
+                setTimeout(() => {
+                    keyElement.classList.remove('active');
+                }, 200);
+            }
+            
+            if (dirElement) {
+                dirElement.classList.add('active');
+                setTimeout(() => {
+                    dirElement.classList.remove('active');
+                }, 200);
+            }
+            
+            console.log(`Control: ${key}`);
+        }
+
+        // Keyboard event listeners
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toUpperCase();
+            if (['W', 'A', 'S', 'D'].includes(key)) {
+                highlightKey(key);
+                e.preventDefault();
+            }
+        });
+
+        // Click events for keys
+        keys.forEach(key => {
+            key.addEventListener('mousedown', () => {
+                const keyValue = key.getAttribute('data-key');
+                highlightKey(keyValue);
+            });
+        });
+
+        // Joystick functionality
+        let isDragging = false;
+        let joystickBounds = null;
+
+        function updateJoystickBounds() {
+            joystickBounds = joystick.getBoundingClientRect();
+        }
+
+        function handleJoystickMove(clientX, clientY) {
+            if (!isDragging || !joystickBounds) return;
+            
+            const centerX = joystickBounds.left + joystickBounds.width / 2;
+            const centerY = joystickBounds.top + joystickBounds.height / 2;
+            
+            const deltaX = clientX - centerX;
+            const deltaY = clientY - centerY;
+            
+            // Calculate distance from center
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const maxDistance = joystickBounds.width / 2 - 30;
+            
+            // Calculate angle
+            const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+            
+            // Determine direction
+            let direction = '';
+            if (distance > 30) {
+                if (angle > -45 && angle <= 45) direction = 'D'; // Right
+                else if (angle > 45 && angle <= 135) direction = 'S'; // Down
+                else if (angle > 135 || angle <= -135) direction = 'A'; // Left
+                else if (angle > -135 && angle <= -45) direction = 'W'; // Up
+                
+                if (direction) {
+                    highlightKey(direction);
+                }
+            }
+            
+            // Limit handle movement to joystick bounds
+            const limitedDistance = Math.min(distance, maxDistance);
+            const ratio = limitedDistance / distance;
+            
+            const handleX = (deltaX * ratio / maxDistance) * 40;
+            const handleY = (deltaY * ratio / maxDistance) * 40;
+            
+            joystickHandle.style.transform = `translate(${handleX}px, ${handleY}px) scale(0.9)`;
+        }
+
+        // Mouse events for joystick
+        joystickHandle.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            joystick.classList.add('active');
+            updateJoystickBounds();
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            handleJoystickMove(e.clientX, e.clientY);
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                joystick.classList.remove('active');
+                joystickHandle.style.transform = 'translate(0, 0) scale(1)';
+            }
+        });
+
+        // Touch events for mobile
+        joystickHandle.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            joystick.classList.add('active');
+            updateJoystickBounds();
+            e.preventDefault();
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const touch = e.touches[0];
+            handleJoystickMove(touch.clientX, touch.clientY);
+            e.preventDefault();
+        });
+
+        document.addEventListener('touchend', () => {
+            if (isDragging) {
+                isDragging = false;
+                joystick.classList.remove('active');
+                joystickHandle.style.transform = 'translate(0, 0) scale(1)';
+            }
+        });
+
+        // Update joystick bounds on resize
+        window.addEventListener('resize', updateJoystickBounds);
+    </script>
+</body>
+</html>
